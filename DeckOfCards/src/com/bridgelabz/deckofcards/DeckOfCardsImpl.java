@@ -2,16 +2,43 @@ package com.bridgelabz.deckofcards;
 
 import java.util.Random;
 
+import com.bridgelabz.essentials.Queue;
+
 public class DeckOfCardsImpl implements DeckOfCardServices{
 
 	int [][] cards = new int [4][13];
+	Queue<Player> playerQueue;
 	
 	@Override
-	public void allocatecards(int noOfPlayers) {
-		for (int i = 0; i < 9; i++) {
-			allotOneCard(noOfPlayers);
+	public void start() {
+		playerQueue = new Queue<Player>();
+		for(int i = 0; i < 4; i++) {
+			addPlayers();
 		}
-		
+	}
+	
+	@Override
+	public void addPlayers() {
+		Player player = new Player();		
+		for (int i = 0; i < 9; i++) {
+			allocatecards(player);
+		}
+		player.enqueueCards();	//	sorts the allotted cards
+		playerQueue.enqueue(player);	//	enqueues the player
+	}
+	
+	@Override
+	public void allocatecards(Player player) {
+		Random random = new Random();	//	random object
+		int suit = random.nextInt(4);
+		int rank = random.nextInt(13);
+		if(cards[suit][rank] == 0) {	//	checks if the card is already allotted
+			player.addCard(suit, rank);	// adds card to player
+			cards[suit][rank] = 1;	//	marks card as allotted
+		}
+		else {	//	card is already allotted. generates new card 
+			allocatecards(player);
+		}	
 	}
 
 	@Override
@@ -28,67 +55,20 @@ public class DeckOfCardsImpl implements DeckOfCardServices{
 		}
 	}
 
-	@Override
-	public void print(int noOfPlayers) {
-		for(int suit = 0; suit < 4; suit++) {
-			for(int rank = 0; rank < 13; rank++) {
-				if(cards[suit][rank] == noOfPlayers) {
-					System.out.print(getSuit(suit) + " " + getRank(rank) + "\n");
-				}
-			}
-		}
-		System.out.println("\n");
-		
-	}
-
-	@Override
-	public String getRank(int rankNumber) {
-		switch(rankNumber) {
-		case 0:
-			return "2";
-		case 1:
-			return "3";
-		case 2:
-			return "4";
-		case 3:
-			return "5";
-		case 4:
-			return "6";
-		case 5:
-			return "7";
-		case 6:
-			return "8";
-		case 7:
-			return "9";
-		case 8:
-			return "10";
-		case 9:
-			return "Jack";
-		case 10:
-			return "Queen";
-		case 11:
-			return "King";
-		case 12:
-			return "Ace";
-		default:
-			return "";
+	public void dequeuePlayers() {
+		for(int i = 0; i < 4; i++) {
+			Player player = playerQueue.dequeue();
+			System.out.println("Player " + (i+1) + "'s cards:");
+			printPlayerCards(player);
+			System.out.println();
 		}
 	}
 
-	@Override
-	public String getSuit(int suitNumber) {
-		switch(suitNumber) {
-		case 0:
-			return "Clubs";
-		case 1:
-			return "Diamonds";
-		case 2:
-			return "Hearts";
-		case 3:
-			return "Spades";
-		default:
-			return "";
+	public void printPlayerCards(Player player) {
+		for (int i = 0; i < 9; i++) {
+			DeckOfCards card = player.getCard();
+			System.out.print(card.getSuit() + " " + card.getRank() + "\n");
 		}
+		System.out.println();
 	}
-
 }
